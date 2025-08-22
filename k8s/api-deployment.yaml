@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-api
+  namespace: products
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: products-api
+  template:
+    metadata:
+      labels:
+        app: products-api
+    spec:
+      containers:
+        - name: api
+          image: your-dockerhub-username/products-service:latest
+          envFrom:
+            - configMapRef:
+                name: api-config
+            - secretRef:
+                name: db-secret
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /products/summary
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /products/summary
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 20
